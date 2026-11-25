@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart Laundromat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Smart Laundromat</h1>
+
+<div id="guest">
+    <a href="login.html">Sign in</a> | <a href="register.html">Register</a>
+</div>
+
+<div id="member" hidden>
+    <p id="welcome"></p>
+    <button id="logout">Sign out</button>
+</div>
+
+<script>
+    async function loadUser() {
+        const response = await fetch("/api/users/me");
+        if (response.ok) {
+            const user = await response.json();
+            document.querySelector("#welcome").textContent = "Signed in as " + user.name + " (" + user.role + ")";
+            document.querySelector("#guest").hidden = true;
+            document.querySelector("#member").hidden = false;
+        }
+    }
+
+    document.querySelector("#logout").addEventListener("click", async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
+        location.reload();
+    });
+
+    loadUser();
+</script>
+</body>
+</html>
