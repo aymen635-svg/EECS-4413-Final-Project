@@ -3,3 +3,8 @@ target/
 *.iml
 .vscode/
 .DS_Store
+
+# Local database files
+/data/
+*.mv.db
+*.trace.db
