@@ -1,6 +1,6 @@
 # EECS 4413 Final Project - Smart Laundromat
 
-Spring Boot backend, HTML/CSS/JS frontend.
+Spring Boot backend, HTML/CSS/JS frontend, PostgreSQL database.
 
 ## Running it
 
@@ -8,11 +8,15 @@ Open the folder with pom.xml in VS Code or IntelliJ and run LaundromatApplicatio
 
 Admin account: admin@laundromat.com / admin12345
 
-Using H2 for now so nobody has to install a database. Data resets every restart. You can see the tables at http://localhost:8080/h2-console (URL: jdbc:h2:mem:laundromat, user: sa, no password)
+Using PostgreSQL for persistent storage, so data is saved even after restarting the application.
+
+Database setup instructions are in database/README.md . Make sure the database is configured before running the application.
 
 ## Folders
 
 Same setup as the lectures: controller, service, repository, model under src/main/java/com/laundromat. Put your stuff in those. HTML/CSS/JS goes in src/main/resources/static.
+
+Database scripts and documentation are in the database folder.
 
 ## Auth (done)
 
@@ -26,3 +30,17 @@ If you're adding endpoints:
 - anything under /api/admin/ and any non-GET on /api/machines is admin only
 - logged in user: `(Long) session.getAttribute("userId")` and `(String) session.getAttribute("role")`
 - errors: `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Machine not found");`
+
+## Database
+
+Using Spring Data JPA with PostgreSQL for users, machines, reservations, and payments.
+
+Database constraints handle data validation and prevent overlapping reservations.
+
+See database/README.md for details.
+
+## Testing
+
+Run tests using:
+
+    mvn test
