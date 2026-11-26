@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Machines - Smart Laundromat</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<nav class="nav">
+    <span class="brand">Smart Laundromat</span>
+    <div id="navLinks" class="nav-links" hidden>
+        <a href="/machines.html">Machines</a>
+        <a href="/my-reservations.html">My reservations</a>
+        <a id="adminLink" href="/admin.html" hidden>Admin</a>
+        <span id="who" class="who"></span>
+        <button id="logout" class="link-btn">Sign out</button>
+    </div>
+</nav>
+
+<main>
+    <h1>Browse machines</h1>
+
+    <div class="filters">
+        <label>Type
+            <select id="filterType">
+                <option value="">All types</option>
+                <option value="WASHER">Washer</option>
+                <option value="DRYER">Dryer</option>
+            </select>
+        </label>
+        <label>Status
+            <select id="filterStatus">
+                <option value="">All statuses</option>
+                <option value="AVAILABLE">Available</option>
+                <option value="RESERVED">Reserved</option>
+                <option value="IN_USE">In use</option>
+                <option value="OUT_OF_SERVICE">Out of service</option>
+            </select>
+        </label>
+    </div>
+
+    <p id="error" class="error"></p>
+    <div id="machineGrid" class="grid"></div>
+    <p id="emptyState" class="muted" hidden>No machines match those filters.</p>
+</main>
+
+<script src="/js/api.js"></script>
+<script>
+    let allMachines = [];
+
+    function statusClass(status) {
+        return status.toLowerCase().replace(/_/g, "_");
+    }
+
+    function renderMachines() {
+        const type = document.querySelector("#filterType").value;
+        const status = document.querySelector("#filterStatus").value;
+
+        const filtered = allMachines.filter(m =>
+            (!type || m.machineType === type) &&
+            (!status || m.status === status)
+        );
+
+        const grid = document.querySelector("#machineGrid");
+        const empty = document.querySelector("#emptyState");
+        grid.innerHTML = "";
+
+        if (filtered.length === 0) {
+            empty.hidden = false;
+            return;
+        }
+        empty.hidden = true;
+
+        filtered.forEach(m => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const canReserve = m.status === "AVAILABLE";
+
+            card.innerHTML = `
+                <h3>${m.machineNumber}</h3>
+                <p class="muted">${m.machineType === "WASHER" ? "Washer" : "Dryer"}</p>
+                <span class="badge ${statusClass(m.status)}">${m.status.replace(/_/g, " ")}</span>
+                <div class="card-actions">
+                    ${canReserve
+                        ? `<a class="btn" href="/reserve.html?machineId=${m.id}">Reserve</a>`
+                        : `<span class="muted">Not available</span>`}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    (async () => {
+        const user = await requireUser();
+        if (!user) return;
+
+        document.querySelector("#navLinks").hidden = false;
+        document.querySelector("#who").textContent = user.name;
+        if (user.role === "ADMIN") {
+            document.querySelector("#adminLink").hidden = false;
+        }
+
+        try {
+            allMachines = await api("/api/machines");
+            renderMachines();
+        } catch (err) {
+            document.querySelector("#error").textContent = err.message;
+        }
+    })();
+
+    document.querySelector("#filterType").addEventListener("change", renderMachines);
+    document.querySelector("#filterStatus").addEventListener("change", renderMachines);
+
+    document.querySelector("#logout").addEventListener("click", async () => {
+        try { await api("/api/auth/logout", { method: "POST" }); }
+        finally { location.href = "/login.html"; }
+    });
+</script>
+</body>
+</html>

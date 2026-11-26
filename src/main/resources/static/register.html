@@ -3,40 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Register - Smart Laundromat</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<h1>Register</h1>
+<nav class="nav">
+    <span class="brand">Smart Laundromat</span>
+</nav>
 
-<form id="registerForm">
-    <input id="name" type="text" placeholder="Name" required>
-    <input id="email" type="email" placeholder="Email" required>
-    <input id="password" type="password" placeholder="Password (8+ characters)" minlength="8" required>
-    <button type="submit">Create account</button>
-</form>
-<p id="error" class="error"></p>
-<p>Already have an account? <a href="login.html">Sign in</a></p>
+<main class="auth">
+    <h1>Create account</h1>
 
+    <form id="registerForm">
+        <label>Name
+            <input id="name" type="text" autocomplete="name" required>
+        </label>
+        <label>Email
+            <input id="email" type="email" autocomplete="email" required>
+        </label>
+        <label>Password (8+ characters)
+            <input id="password" type="password" minlength="8" maxlength="72"
+                   autocomplete="new-password" required>
+        </label>
+        <button type="submit">Register</button>
+    </form>
+
+    <p id="error" class="error"></p>
+    <p>Already have an account? <a href="/login.html">Sign in</a></p>
+</main>
+
+<script src="/js/api.js"></script>
 <script>
-    document.querySelector("#registerForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
+    document.querySelector("#registerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const error = document.querySelector("#error");
+        error.textContent = "";
 
-        const response = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: document.querySelector("#name").value,
-                email: document.querySelector("#email").value,
-                password: document.querySelector("#password").value
-            })
-        });
-
-        if (response.ok) {
-            location.href = "login.html";
-        } else {
-            const data = await response.json();
-            document.querySelector("#error").textContent = data.message;
+        try {
+            await api("/api/auth/register", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: document.querySelector("#name").value.trim(),
+                    email: document.querySelector("#email").value.trim(),
+                    password: document.querySelector("#password").value,
+                }),
+            });
+            location.href = "/login.html";
+        } catch (err) {
+            error.textContent = err.message;
         }
     });
 </script>

@@ -1,18 +1,113 @@
+* { box-sizing: border-box; }
+
 body {
-    font-family: Arial, sans-serif;
-    max-width: 400px;
-    margin: 40px auto;
-    padding: 0 16px;
+    margin: 0;
+    font-family: system-ui, -apple-system, Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1c2430;
 }
 
-input, button {
-    display: block;
-    width: 100%;
-    padding: 8px;
-    margin: 8px 0;
-    box-sizing: border-box;
+a { color: #1f6feb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Nav */
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e1e6eb;
+}
+.brand { font-weight: 700; }
+.nav-links { display: flex; align-items: center; gap: 18px; }
+.nav-links a { color: #1c2430; }
+.who { color: #5b6878; }
+.link-btn {
+    background: none; border: none; padding: 0;
+    color: #1f6feb; cursor: pointer; font: inherit;
 }
 
-.error {
-    color: red;
+main { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+
+/* Auth pages */
+.auth { max-width: 380px; }
+.auth h1 { margin-bottom: 20px; }
+.auth form { display: grid; gap: 14px; }
+.auth label { display: grid; gap: 6px; font-size: 14px; color: #46535f; }
+.auth input {
+    padding: 10px 12px; border: 1px solid #cfd8e0; border-radius: 6px;
+    font-size: 15px;
+}
+.auth button {
+    padding: 10px 12px; border: none; border-radius: 6px;
+    background: #1f6feb; color: #fff; font-size: 15px; cursor: pointer;
+}
+.auth button:hover { background: #165bc7; }
+
+.error { color: #c0392b; min-height: 18px; }
+
+/* Buttons */
+.btn {
+    display: inline-block; padding: 10px 16px; border-radius: 6px;
+    background: #1f6feb; color: #fff;
+}
+.btn:hover { background: #165bc7; text-decoration: none; }
+
+/* Card grid (for machines.html later) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+.card {
+    background: #fff; border: 1px solid #e1e6eb; border-radius: 10px;
+    padding: 16px;
+}
+.card h3 { margin: 0 0 6px; font-size: 18px; }
+
+/* Status badges */
+.badge {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+}
+.badge.available { background: #e3f6e8; color: #1d7a3a; }
+.badge.reserved  { background: #fff4d6; color: #8a6d1a; }
+.badge.in_use    { background: #e3eefc; color: #1f5fbf; }
+.badge.out_of_service { background: #f3e3e3; color: #a03030; }
+
+/* Filters */
+.filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.filters label {
+    display: grid;
+    gap: 4px;
+    font-size: 14px;
+    color: #46535f;
+}
+.filters select {
+    padding: 8px 10px;
+    border: 1px solid #cfd8e0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+}
+
+/* Card actions */
+.card-actions {
+    margin-top: 14px;
+}
+.card-actions .btn {
+    padding: 8px 14px;
+    font-size: 14px;
+}
+
+/* Utilities */
+.muted {
+    color: #6b7785;
+    font-size: 14px;
 }

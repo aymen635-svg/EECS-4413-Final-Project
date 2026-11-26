@@ -4,37 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Smart Laundromat</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<h1>Smart Laundromat</h1>
+<nav class="nav">
+    <span class="brand">Smart Laundromat</span>
+    <div id="navLinks" class="nav-links" hidden>
+        <a href="/machines.html">Machines</a>
+        <a href="/my-reservations.html">My reservations</a>
+        <a id="adminLink" href="/admin.html" hidden>Admin</a>
+        <span id="who" class="who"></span>
+        <button id="logout" class="link-btn">Sign out</button>
+    </div>
+</nav>
 
-<div id="guest">
-    <a href="login.html">Sign in</a> | <a href="register.html">Register</a>
-</div>
+<main>
+    <div id="guest">
+        <h1>Welcome</h1>
+        <p><a href="/login.html">Sign in</a> | <a href="/register.html">Register</a></p>
+    </div>
+    <div id="member" hidden>
+        <h1>Welcome back</h1>
+        <p id="welcome"></p>
+        <p><a class="btn" href="/machines.html">Browse machines</a></p>
+    </div>
+</main>
 
-<div id="member" hidden>
-    <p id="welcome"></p>
-    <button id="logout">Sign out</button>
-</div>
-
+<script src="/js/api.js"></script>
 <script>
-    async function loadUser() {
-        const response = await fetch("/api/users/me");
-        if (response.ok) {
-            const user = await response.json();
-            document.querySelector("#welcome").textContent = "Signed in as " + user.name + " (" + user.role + ")";
-            document.querySelector("#guest").hidden = true;
-            document.querySelector("#member").hidden = false;
+    (async () => {
+        const user = await requireUser();
+        if (!user) return;
+
+        document.querySelector("#guest").hidden = true;
+        document.querySelector("#member").hidden = false;
+        document.querySelector("#navLinks").hidden = false;
+
+        document.querySelector("#welcome").textContent =
+            "Signed in as " + user.name + " (" + user.role + ")";
+        document.querySelector("#who").textContent = user.name;
+        if (user.role === "ADMIN") {
+            document.querySelector("#adminLink").hidden = false;
         }
-    }
+    })();
 
     document.querySelector("#logout").addEventListener("click", async () => {
-        await fetch("/api/auth/logout", { method: "POST" });
-        location.reload();
+        try { await api("/api/auth/logout", { method: "POST" }); }
+        finally { location.href = "/login.html"; }
     });
-
-    loadUser();
 </script>
 </body>
 </html>
