@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payments</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="wide">
+<p><a href="index.html">&larr; Home</a></p>
+<h1>Payments</h1>
+
+<!-- Pay for a reservation. Open as payments.html?reservationId=123 (e.g. from the booking page) -->
+<section id="paySection" hidden>
+    <h2>Pay for reservation</h2>
+    <dl class="summary">
+        <dt>Reservation</dt><dd id="qReservation"></dd>
+        <dt>Machine</dt><dd id="qMachine"></dd>
+        <dt>Time</dt><dd id="qTime"></dd>
+        <dt>Status</dt><dd id="qStatus"></dd>
+        <dt>Amount due</dt><dd id="qAmount"></dd>
+        <dt>Pay before</dt><dd id="qPayBefore"></dd>
+    </dl>
+
+    <form id="payForm">
+        <label for="token">Test payment method (no real cards are accepted)</label>
+        <select id="token">
+            <option value="tok_visa">Test Visa: succeeds</option>
+            <option value="tok_mastercard">Test Mastercard: succeeds</option>
+            <option value="tok_chargeDeclined">Test card: declined</option>
+            <option value="tok_chargeDeclinedInsufficientFunds">Test card: insufficient funds</option>
+            <option value="tok_chargeDeclinedExpiredCard">Test card: expired</option>
+        </select>
+        <button type="submit" id="payButton">Pay</button>
+    </form>
+    <p id="result"></p>
+</section>
+
+<p id="error" class="error"></p>
+
+<h2>My payment history</h2>
+<div class="table-wrap">
+    <table>
+        <thead>
+        <tr><th>#</th><th>Reservation</th><th>Machine</th><th>Amount</th><th>Status</th><th>Date</th><th>Note</th></tr>
+        </thead>
+        <tbody id="history"></tbody>
+    </table>
+</div>
+<p id="emptyHistory" hidden>No payments yet.</p>
+
+<script>
+    const reservationId = new URLSearchParams(location.search).get("reservationId");
+    // One key per payment attempt: a double-click or network retry reuses it, so the
+    // server never charges twice. A new key is made after each finished attempt.
+    let idempotencyKey = crypto.randomUUID();
+
+    function money(amount, currency) {
+        return Number(amount).toFixed(2) + " " + (currency || "");
+    }
+
+    function when(value) {
+        return value ? new Date(value).toLocaleString() : "";
+    }
+
+    async function readError(response) {
+        if (response.status === 401) {
+            location.href = "login.html";
+            return "Please sign in";
+        }
+        try {
+            return (await response.json()).message || "Request failed";
+        } catch {
+            return "Request failed";
+        }
+    }
+
+    async function loadQuote() {
+        const response = await fetch("/api/payments/quote?reservationId=" + encodeURIComponent(reservationId));
+        if (!response.ok) {
+            document.querySelector("#error").textContent = await readError(response);
+            return;
+        }
+        const q = await response.json();
+        document.querySelector("#qReservation").textContent = "#" + q.reservationId;
+        document.querySelector("#qMachine").textContent = q.machineNumber + " (" + q.machineType + ")";
+        document.querySelector("#qTime").textContent = when(q.startTime) + " to " + when(q.endTime);
+        document.querySelector("#qStatus").textContent = q.reservationStatus;
+        document.querySelector("#qAmount").textContent = money(q.amount, q.currency);
+        document.querySelector("#qPayBefore").textContent = q.payBefore ? when(q.payBefore) : "n/a";
+        document.querySelector("#payForm").hidden = q.reservationStatus !== "PENDING_PAYMENT";
+        document.querySelector("#paySection").hidden = false;
+    }
+
+    document.querySelector("#payForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = document.querySelector("#payButton");
+        const result = document.querySelector("#result");
+        button.disabled = true;
+        result.textContent = "Processing...";
+        result.className = "";
+
+        try {
+            const response = await fetch("/api/payments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+                body: JSON.stringify({
+                    reservationId: Number(reservationId),
+                    paymentToken: document.querySelector("#token").value
+                })
+            });
+
+            if (response.status === 201) {
+                const p = await response.json();
+                result.textContent = "Payment successful (" + money(p.amount, p.currency) + "). Your reservation is confirmed.";
+                result.className = "success";
+            } else if (response.status === 402) {
+                const p = await response.json();
+                result.textContent = "Payment declined: " + p.failureReason + " You can try again.";
+                result.className = "error";
+            } else {
+                result.textContent = await readError(response);
+                result.className = "error";
+            }
+            idempotencyKey = crypto.randomUUID();
+        } catch {
+            // Network error: keep the same key so a retry cannot double-charge
+            result.textContent = "Could not reach the server. Please try again.";
+            result.className = "error";
+        } finally {
+            button.disabled = false;
+        }
+        await loadQuote();
+        await loadHistory();
+    });
+
+    async function loadHistory() {
+        const response = await fetch("/api/payments");
+        if (!response.ok) {
+            document.querySelector("#error").textContent = await readError(response);
+            return;
+        }
+        const payments = await response.json();
+        const body = document.querySelector("#history");
+        body.replaceChildren();
+        for (const p of payments) {
+            const row = document.createElement("tr");
+            const cells = [
+                p.id,
+                "#" + p.reservationId,
+                p.machineNumber,
+                money(p.amount, p.currency),
+                p.paymentStatus,
+                when(p.paymentDate),
+                p.failureReason || ""
+            ];
+            for (const value of cells) {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            }
+            body.appendChild(row);
+        }
+        document.querySelector("#emptyHistory").hidden = payments.length > 0;
+    }
+
+    if (reservationId) {
+        loadQuote();
+    }
+    loadHistory();
+</script>
+</body>
+</html>

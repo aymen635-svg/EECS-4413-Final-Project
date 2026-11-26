@@ -31,6 +31,15 @@ If you're adding endpoints:
 - logged in user: `(Long) session.getAttribute("userId")` and `(String) session.getAttribute("role")`
 - errors: `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Machine not found");`
 
+## Payments (done)
+
+- POST /api/payments (pay with a test token, e.g. `tok_visa` / `tok_chargeDeclined`)
+- GET /api/payments, GET /api/payments/{id}, GET /api/payments/quote?reservationId=
+- GET /api/reservations/{id}/payments
+- GET /api/admin/payments?status=
+
+Pages: payments.html?reservationId=ID, admin-payments.html. Full docs and notes for booking/notifications in docs/payments.md.
+
 ## Database
 
 Using Spring Data JPA with PostgreSQL for users, machines, reservations, and payments.

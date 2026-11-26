@@ -13,6 +13,9 @@ public interface PaymentRepository
     // Get all payment attempts for a reservation
     List<Payment> findByReservationId(Long reservationId);
 
+    // Get all payment attempts for a reservation, newest first
+    List<Payment> findByReservationIdOrderByIdDesc(Long reservationId);
+
     // Get payments with a specific status
     List<Payment> findByPaymentStatus(String paymentStatus);
 
@@ -25,4 +28,15 @@ public interface PaymentRepository
     Optional<Payment> findByReservationIdAndPaymentStatus(
             Long reservationId,
             String paymentStatus);
+
+    // Look up an earlier attempt sent with the same idempotency key
+    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
+    // All payments made by one customer, newest first
+    List<Payment> findByReservationUserIdOrderByIdDesc(Long userId);
+
+    // Admin listings, newest first
+    List<Payment> findAllByOrderByIdDesc();
+
+    List<Payment> findByPaymentStatusOrderByIdDesc(String paymentStatus);
 }

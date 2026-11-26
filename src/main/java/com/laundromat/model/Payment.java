@@ -30,6 +30,18 @@ public class Payment {
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
 
+    // Client-supplied key so a retried request does not charge twice
+    @Column(name = "idempotency_key", unique = true, length = 100)
+    private String idempotencyKey;
+
+    // Reference returned by the (simulated) payment gateway, e.g. "sim_ch_..."
+    @Column(name = "transaction_ref", length = 100)
+    private String transactionRef;
+
+    // Why the gateway declined the payment (null when it succeeded)
+    @Column(name = "failure_reason")
+    private String failureReason;
+
     public Payment() {
     }
 
@@ -69,7 +81,31 @@ public class Payment {
         return paymentDate;
     }
 
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public String getTransactionRef() {
+        return transactionRef;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public void setTransactionRef(String transactionRef) {
+        this.transactionRef = transactionRef;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
     }
 }

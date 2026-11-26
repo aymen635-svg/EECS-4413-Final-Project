@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin: Payments</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="wide">
+<p><a href="index.html">&larr; Home</a></p>
+<h1>All payments</h1>
+
+<label for="status">Filter by status</label>
+<select id="status">
+    <option value="">All</option>
+    <option value="SUCCEEDED">Succeeded</option>
+    <option value="FAILED">Failed</option>
+    <option value="PENDING">Pending</option>
+    <option value="REFUNDED">Refunded</option>
+</select>
+
+<p id="totals"></p>
+<p id="error" class="error"></p>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th>#</th><th>Customer</th><th>Reservation</th><th>Machine</th><th>Amount</th>
+            <th>Status</th><th>Method</th><th>Transaction</th><th>Date</th><th>Note</th>
+        </tr>
+        </thead>
+        <tbody id="payments"></tbody>
+    </table>
+</div>
+
+<script>
+    async function loadPayments() {
+        const status = document.querySelector("#status").value;
+        const response = await fetch("/api/admin/payments" + (status ? "?status=" + status : ""));
+        const error = document.querySelector("#error");
+        if (!response.ok) {
+            if (response.status === 401) {
+                location.href = "login.html";
+                return;
+            }
+            error.textContent = (await response.json()).message;
+            return;
+        }
+        error.textContent = "";
+
+        const payments = await response.json();
+        const body = document.querySelector("#payments");
+        body.replaceChildren();
+        let succeededTotal = 0;
+        for (const p of payments) {
+            if (p.paymentStatus === "SUCCEEDED") {
+                succeededTotal += Number(p.amount);
+            }
+            const row = document.createElement("tr");
+            const cells = [
+                p.id, p.customerEmail, "#" + p.reservationId + " (" + p.reservationStatus + ")", p.machineNumber,
+                Number(p.amount).toFixed(2) + " " + p.currency, p.paymentStatus, p.paymentMethod,
+                p.transactionRef || "", new Date(p.paymentDate).toLocaleString(), p.failureReason || ""
+            ];
+            for (const value of cells) {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            }
+            body.appendChild(row);
+        }
+        document.querySelector("#totals").textContent =
+            payments.length + " payment(s) shown. Succeeded total: " + succeededTotal.toFixed(2);
+    }
+
+    document.querySelector("#status").addEventListener("change", loadPayments);
+    loadPayments();
+</script>
+</body>
+</html>
