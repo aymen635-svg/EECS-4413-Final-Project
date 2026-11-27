@@ -1,0 +1,18 @@
+Method	URL	Function
+GET	/api/v1/machines	Get active machines
+GET	/api/v1/machines/{id}	Get machine by ID
+POST	/api/v1/machines	Add machine
+PUT	/api/v1/machines/{id}	Update machine
+PATCH	/api/v1/machines/{id}/status	Change status
+DELETE	/api/v1/machines/{id}	Deactivate machine
+
+Availability
+Method	URL	Function
+GET	/api/v1/machines/availability	Find machines available for a time slot
+
+Reservations
+Method	URL	Function
+POST	/api/v1/reservations	Create reservation
+GET	/api/v1/reservations	Get my reservations
+GET	/api/v1/reservations/{id}	Get reservation
+PATCH	/api/v1/reservations/{id}/cancel	Cancel reservation

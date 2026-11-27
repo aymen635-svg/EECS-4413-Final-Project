@@ -1,0 +1,57 @@
+GET all machines : curl -X GET http://localhost:8080/api/v1/machines
+
+POST - Add a washing machine: curl -X POST http://localhost:8080/api/v1/machines \
+-H "Content-Type: application/json" \
+-d '{
+  "machineNumber": "W-01",
+  "machineType": "WASHER",
+  "status": "AVAILABLE",
+  "isActive": true
+}'
+
+POST - Add a dryer machine: curl -X POST http://localhost:8080/api/v1/machines \
+-H "Content-Type: application/json" \
+-d '{
+  "machineNumber": "D-01",
+  "machineType": "DRYER",
+  "status": "AVAILABLE",
+  "isActive": true
+}'
+
+GET - Machine by Id: curl -X GET http://localhost:8080/api/v1/machines/1
+
+GET Check Machine availability:
+curl -X GET "http://localhost:8080/api/v1/machines/availability?startTime=2026-11-28T14:00:00&endTime=2026-11-28T15:00:00"
+
+PUT — Update a machine: curl -X PUT http://localhost:8080/api/v1/machines/1 \
+-H "Content-Type: application/json" \
+-d '{
+  "machineNumber": "W-01",
+  "machineType": "WASHER",
+  "status": "MAINTENANCE",
+  "isActive": true
+}'
+
+PATCH - Update Machine status: curl -X PATCH http://localhost:8080/api/v1/machines/1/status \
+-H "Content-Type: application/json" \
+-d '{
+  "status": "AVAILABLE"
+}'
+
+DELETE - Deactivate a machine: curl -X DELETE http://localhost:8080/api/v1/machines/1
+
+
+GET all reservations: curl http://localhost:8080/api/v1/reservations
+
+POST - Create a reservation: curl -X POST http://localhost:8080/api/v1/reservations \
+-H "Content-Type: application/json" \
+-d '{
+  "machineId": 2,
+  "startTime": "2026-11-28T14:00:00",
+  "endTime": "2026-11-28T15:00:00"
+}'
+
+
+GET - Retrieve reservation by ID: curl http://localhost:8080/api/v1/reservations/1
+
+PATCH - Cancel a reservation: curl -X PATCH http://localhost:8080/api/v1/reservations/1/cancel
